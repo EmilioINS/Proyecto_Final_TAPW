@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocFlow - Dashboard</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>DocFlow</h2>
+                <p>Gestor de Documentos</p>
+            </div>
+            
+            <ul class="nav-links">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active" data-target="overview">
+                        Resumen
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-target="templates">
+                        Plantillas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-target="generator">
+                        Generar PDF
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-target="history">
+                        Historial
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <button id="logout-btn" class="btn-logout">Cerrar Sesión</button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1 id="page-title">Resumen General</h1>
+                <div class="user-info">
+                    <span id="user-name">Cargando...</span>
+                    <div class="user-avatar" id="user-avatar">?</div>
+                </div>
+            </header>
+
+            <!-- Dynamic Views -->
+            
+            <!-- Overview View -->
+            <section id="overview" class="view-section active">
+                <div class="glass-card">
+                    <h2>Bienvenido al panel de administración</h2>
+                    <p style="color: var(--text-muted); margin-top: 0.5rem;">Desde aquí podrás gestionar tus plantillas y generar documentos dinámicos.</p>
+                    
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <h3>Plantillas Activas</h3>
+                            <div class="value">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Documentos Generados</h3>
+                            <div class="value">0</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Templates View (Placeholder for Phase 3) -->
+            <section id="templates" class="view-section">
+                <div class="glass-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2>Tus Plantillas</h2>
+                        <button class="btn-primary" id="btn-new-template">+ Nueva Plantilla</button>
+                    </div>
+                    <p style="color: var(--text-muted);">Aquí aparecerán las plantillas HTML configuradas por los departamentos.</p>
+                    <!-- Table will be injected here by JS later -->
+                </div>
+            </section>
+
+            <!-- Generator View (Placeholder for Phase 4) -->
+            <section id="generator" class="view-section">
+                <div class="glass-card">
+                    <h2>Generador de PDF</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Selecciona una plantilla y proporciona los datos (JSON) para generar el documento.</p>
+                    <p style="color: #34d399; font-style: italic;">(Módulo en construcción)</p>
+                </div>
+            </section>
+
+            <!-- History View -->
+            <section id="history" class="view-section">
+                <div class="glass-card">
+                    <h2>Historial de Documentos</h2>
+                    <p style="color: var(--text-muted);">Registro de todos los PDFs generados previamente.</p>
+                    <p style="color: #34d399; font-style: italic; margin-top: 1.5rem;">(Módulo en construcción)</p>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script type="module" src="/js/pages/dashboard.js"></script>
+</body>
+</html>
