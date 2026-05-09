@@ -30,6 +30,18 @@ class AuthController {
             res.status(401).json({ message: error.message });
         }
     }
+
+    async logout(req, res) {
+        // En una arquitectura sin estado (JWT en localStorage), el logout real 
+        // se hace en el frontend borrando el token. 
+        // Si usamos cookies HTTP-only, aquí limpiaríamos la cookie.
+        // Para este caso, solo retornamos éxito.
+        try {
+            res.status(200).json({ message: 'Sesión cerrada exitosamente' });
+        } catch (error) {
+            res.status(500).json({ message: 'Error al cerrar sesión' });
+        }
+    }
 }
 
 module.exports = new AuthController();
