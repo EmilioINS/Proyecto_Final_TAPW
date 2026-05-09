@@ -19,6 +19,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // API Routes
 app.use('/api/auth', authRoutes);
 
+// Explicit root redirect to login
+app.get('/', (req, res) => {
+    res.redirect('/views/auth/login.html');
+});
+
 // Catch-all for API 404
 app.use('/api/*', (req, res) => {
     res.status(404).json({ message: 'API Route not found' });
@@ -27,7 +32,7 @@ app.use('/api/*', (req, res) => {
 // For frontend routes, you could serve index.html (SPA) or just rely on express.static
 // Let static middleware handle it. If no file matches, send a 404 text or redirect to index.html
 app.use((req, res) => {
-    res.status(404).sendFile(path.join(__dirname, 'public/index.html'));
+    res.status(404).sendFile(path.join(__dirname, 'public/views/auth/login.html'));
 });
 
 // General error handler
