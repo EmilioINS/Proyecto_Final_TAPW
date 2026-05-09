@@ -1,41 +1,42 @@
-var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var cors = require('cors');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+// Import routes
+var authRoutes = require('./src/infrastructure/routes/authRoutes');
 
 var app = express();
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-
+app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+// API Routes
+app.use('/api/auth', authRoutes);
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+// Catch-all for API 404
+app.use('/api/*', (req, res) => {
+    res.status(404).json({ message: 'API Route not found' });
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+// For frontend routes, you could serve index.html (SPA) or just rely on express.static
+// Let static middleware handle it. If no file matches, send a 404 text or redirect to index.html
+app.use((req, res) => {
+    res.status(404).sendFile(path.join(__dirname, 'public/index.html'));
+});
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+// General error handler
+app.use(function(err, req, res, next) {
+    console.error(err.stack);
+    res.status(err.status || 500).json({
+        message: err.message || 'Internal Server Error',
+        error: req.app.get('env') === 'development' ? err : {}
+    });
 });
 
 module.exports = app;
