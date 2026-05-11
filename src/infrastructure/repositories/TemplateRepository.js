@@ -51,6 +51,21 @@ class TemplateRepository {
         if (!data) return null;
         return new Template(data);
     }
+
+    async findByToken(token) {
+        const { data, error } = await supabase
+            .from('templates')
+            .select('*')
+            .eq('token', token)
+            .single();
+
+        if (error && error.code !== 'PGRST116') {
+            throw new Error(`Database error: ${error.message}`);
+        }
+
+        if (!data) return null;
+        return new Template(data);
+    }
 }
 
 module.exports = new TemplateRepository();

@@ -7,6 +7,7 @@ var cors = require('cors');
 // Import routes
 var authRoutes = require('./src/infrastructure/routes/authRoutes');
 var templateRoutes = require('./src/infrastructure/routes/templateRoutes');
+var documentRoutes = require('./src/infrastructure/routes/documentRoutes');
 
 var app = express();
 
@@ -20,6 +21,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/templates', templateRoutes);
+app.use('/api/documents', documentRoutes);
 
 // Explicit root redirect to login
 app.get('/', (req, res) => {
