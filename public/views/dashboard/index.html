@@ -74,15 +74,30 @@
                 </div>
             </section>
 
-            <!-- Templates View (Placeholder for Phase 3) -->
+            <!-- Templates View -->
             <section id="templates" class="view-section">
                 <div class="glass-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                         <h2>Tus Plantillas</h2>
-                        <button class="btn-primary" id="btn-new-template">+ Nueva Plantilla</button>
+                        <!-- Botón oculto por ahora (Fase futura de editor de plantillas) -->
+                        <button class="btn-primary" id="btn-new-template" style="display: none;">+ Nueva Plantilla</button>
                     </div>
-                    <p style="color: var(--text-muted);">Aquí aparecerán las plantillas HTML configuradas por los departamentos.</p>
-                    <!-- Table will be injected here by JS later -->
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--surface-border); text-align: left;">
+                                    <th style="padding: 1rem; color: var(--text-muted);">Nombre</th>
+                                    <th style="padding: 1rem; color: var(--text-muted);">Descripción</th>
+                                    <th style="padding: 1rem; color: var(--text-muted);">Token (UUID)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="templates-table-body">
+                                <tr>
+                                    <td colspan="3" style="padding: 1rem; text-align: center; color: var(--text-muted);">Cargando plantillas...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
@@ -99,8 +114,23 @@
             <section id="history" class="view-section">
                 <div class="glass-card">
                     <h2>Historial de Documentos</h2>
-                    <p style="color: var(--text-muted);">Registro de todos los PDFs generados previamente.</p>
-                    <p style="color: #34d399; font-style: italic; margin-top: 1.5rem;">(Módulo en construcción)</p>
+                    <div style="overflow-x: auto; margin-top: 1.5rem;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--surface-border); text-align: left;">
+                                    <th style="padding: 1rem; color: var(--text-muted);">Plantilla</th>
+                                    <th style="padding: 1rem; color: var(--text-muted);">Hash</th>
+                                    <th style="padding: 1rem; color: var(--text-muted);">Fecha</th>
+                                    <th style="padding: 1rem; color: var(--text-muted);">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                <tr>
+                                    <td colspan="4" style="padding: 1rem; text-align: center; color: var(--text-muted);">Cargando historial...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 

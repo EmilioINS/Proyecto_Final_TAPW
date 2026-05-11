@@ -23,6 +23,16 @@ class DocumentController {
             res.status(statusCode).json({ message: error.message });
         }
     }
+
+    async getHistory(req, res) {
+        try {
+            const userId = req.user.id;
+            const history = await documentUseCase.getUserDocuments(userId);
+            res.status(200).json(history);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
 }
 
 module.exports = new DocumentController();

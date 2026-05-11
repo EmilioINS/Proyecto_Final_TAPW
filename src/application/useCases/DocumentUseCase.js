@@ -63,6 +63,10 @@ class DocumentUseCase {
             generated: true
         };
     }
+
+    async getUserDocuments(userId) {
+        return await documentRepository.findAllByUserId(userId);
+    }
 }
 
 module.exports = new DocumentUseCase();
