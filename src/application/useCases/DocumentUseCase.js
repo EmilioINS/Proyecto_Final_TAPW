@@ -42,7 +42,13 @@ class DocumentUseCase {
         }
 
         // 4. Generate the PDF buffer using Puppeteer
-        const pdfBuffer = await pdfService.generatePdfFromHtml(template.html_content, data);
+        // Extraer configuraciones de PDF si vienen en el payload (y removerlas del data para no afectar hashes u otras cosas)
+        const pdfOptions = data._pdfOptions || template.pdf_options || {};
+        if (data._pdfOptions) {
+            delete data._pdfOptions;
+        }
+
+        const pdfBuffer = await pdfService.generatePdfFromHtml(template.html_content, data, pdfOptions);
 
         // 5. Upload to Supabase Storage
         const fileName = `${template.id}/${documentHash}.pdf`;
