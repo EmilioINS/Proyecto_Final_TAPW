@@ -2,3 +2,4 @@ node_modules/
 backend.md
 .env
 db_schema.sql
+docs/
