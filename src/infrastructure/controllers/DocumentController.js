@@ -23,6 +23,15 @@ class DocumentController {
             res.status(statusCode).json({ message: error.message });
         }
     }
+    async getAll(req, res) {
+        try {
+            const userId = req.user.id;
+            const documents = await documentUseCase.getUserDocuments(userId);
+            res.status(200).json(documents);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
 }
 
 module.exports = new DocumentController();
