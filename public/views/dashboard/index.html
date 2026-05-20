@@ -74,24 +74,38 @@
                 </div>
             </section>
 
-            <!-- Templates View (Placeholder for Phase 3) -->
+            <!-- Templates View -->
             <section id="templates" class="view-section">
                 <div class="glass-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                         <h2>Tus Plantillas</h2>
                         <button class="btn-primary" id="btn-new-template">+ Nueva Plantilla</button>
                     </div>
-                    <p style="color: var(--text-muted);">Aquí aparecerán las plantillas HTML configuradas por los departamentos.</p>
-                    <!-- Table will be injected here by JS later -->
+                    <div id="templates-container" class="dashboard-grid">
+                        <!-- Templates will be injected here by JS -->
+                    </div>
                 </div>
             </section>
 
-            <!-- Generator View (Placeholder for Phase 4) -->
+            <!-- Generator View -->
             <section id="generator" class="view-section">
                 <div class="glass-card">
                     <h2>Generador de PDF</h2>
                     <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Selecciona una plantilla y proporciona los datos (JSON) para generar el documento.</p>
-                    <p style="color: #34d399; font-style: italic;">(Módulo en construcción)</p>
+                    <form id="generator-form" class="form-container">
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="template-select" style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Plantilla:</label>
+                            <select id="template-select" required style="width: 100%; padding: 0.75rem; border-radius: 8px; background: rgba(15,23,42,0.8); border: 1px solid var(--surface-border); color: var(--text-main);">
+                                <option value="" disabled selected>Selecciona una plantilla</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="json-data" style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Datos (JSON):</label>
+                            <textarea id="json-data" rows="8" required style="width: 100%; padding: 0.75rem; border-radius: 8px; background: rgba(15,23,42,0.8); border: 1px solid var(--surface-border); color: var(--text-main); font-family: monospace;" placeholder='{"key": "value"}'></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary" style="width: 100%;">Generar PDF</button>
+                    </form>
+                    <div id="generator-result" style="margin-top: 1.5rem; display: none;"></div>
                 </div>
             </section>
 
@@ -99,8 +113,21 @@
             <section id="history" class="view-section">
                 <div class="glass-card">
                     <h2>Historial de Documentos</h2>
-                    <p style="color: var(--text-muted);">Registro de todos los PDFs generados previamente.</p>
-                    <p style="color: #34d399; font-style: italic; margin-top: 1.5rem;">(Módulo en construcción)</p>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Registro de todos los PDFs generados previamente.</p>
+                    <div class="table-responsive">
+                        <table class="data-table" style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--surface-border); text-align: left;">
+                                    <th style="padding: 1rem; color: var(--text-muted);">Plantilla</th>
+                                    <th style="padding: 1rem; color: var(--text-muted);">Fecha</th>
+                                    <th style="padding: 1rem; color: var(--text-muted);">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-container">
+                                <!-- History will be injected here by JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 

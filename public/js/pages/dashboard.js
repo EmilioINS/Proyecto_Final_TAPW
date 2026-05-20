@@ -66,4 +66,135 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    // 4. Data Fetching and Rendering
+    const loadTemplates = async () => {
+        try {
+            const response = await fetch('/api/templates', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error('Error al cargar plantillas');
+            const templates = await response.json();
+            
+            const container = document.getElementById('templates-container');
+            const select = document.getElementById('template-select');
+            
+            container.innerHTML = '';
+            // keep the first disabled option in select
+            select.innerHTML = '<option value="" disabled selected>Selecciona una plantilla</option>';
+            
+            // update metrics
+            const templateMetric = document.querySelectorAll('.stat-card .value')[0];
+            if(templateMetric) templateMetric.textContent = templates.length;
+
+            templates.forEach(t => {
+                // Add to view grid
+                const card = document.createElement('div');
+                card.className = 'stat-card';
+                card.innerHTML = `
+                    <h3>${t.name}</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem;">${t.description || 'Sin descripción'}</p>
+                    <p style="color: var(--text-muted); font-size: 0.75rem; margin-top: 1rem;">Token: <code style="color: var(--accent);">${t.token}</code></p>
+                `;
+                container.appendChild(card);
+
+                // Add to select options
+                const option = document.createElement('option');
+                option.value = t.token;
+                option.textContent = t.name;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const loadHistory = async () => {
+        try {
+            const response = await fetch('/api/documents', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error('Error al cargar historial');
+            const history = await response.json();
+            
+            const tbody = document.getElementById('history-container');
+            tbody.innerHTML = '';
+            
+            // update metrics
+            const documentMetric = document.querySelectorAll('.stat-card .value')[1];
+            if(documentMetric) documentMetric.textContent = history.length;
+
+            history.forEach(doc => {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid var(--surface-border)';
+                const date = new Date(doc.created_at).toLocaleDateString();
+                
+                tr.innerHTML = `
+                    <td style="padding: 1rem;">${doc.templates?.name || 'Desconocido'}</td>
+                    <td style="padding: 1rem; color: var(--text-muted);">${date}</td>
+                    <td style="padding: 1rem;">
+                        <a href="${doc.pdf_url}" target="_blank" style="color: #34d399; text-decoration: none; font-weight: 500;">Ver PDF</a>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const setupGenerator = () => {
+        const form = document.getElementById('generator-form');
+        const resultDiv = document.getElementById('generator-result');
+        
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '<p style="color: var(--text-muted);">Generando...</p>';
+                
+                const tokenInput = document.getElementById('template-select').value;
+                const jsonInput = document.getElementById('json-data').value;
+                
+                let data;
+                try {
+                    data = JSON.parse(jsonInput);
+                } catch (err) {
+                    resultDiv.innerHTML = '<p style="color: var(--error);">Error: JSON inválido.</p>';
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/api/documents', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ token: tokenInput, data, mode: 'generate' })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(result.message || 'Error al generar documento');
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <p style="color: #34d399; margin-bottom: 0.5rem;">${result.message}</p>
+                        <a href="${result.pdf_url}" target="_blank" class="btn-primary" style="display: inline-block; text-decoration: none;">Abrir Documento</a>
+                    `;
+                    
+                    // Reload history to show the new document
+                    loadHistory();
+                } catch (error) {
+                    resultDiv.innerHTML = `<p style="color: var(--error);">Error: ${error.message}</p>`;
+                }
+            });
+        }
+    };
+
+    // Initialize
+    loadTemplates();
+    loadHistory();
+    setupGenerator();
 });

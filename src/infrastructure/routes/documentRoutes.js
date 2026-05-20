@@ -10,4 +10,8 @@ router.use(authMiddleware);
 // Accepts body: { token: 'UUID', data: {...}, mode: 'generate'|'consult' }
 router.post('/', documentController.generateOrConsult);
 
+// GET /api/documents
+// Returns document history for the logged in user
+router.get('/', documentController.getAll);
+
 module.exports = router;
