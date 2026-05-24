@@ -12,12 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const setLoading = (button, isLoading) => {
+        const span = button.querySelector('span');
         if (isLoading) {
-            button.dataset.originalText = button.innerHTML;
-            button.innerHTML = '<span>Cargando...</span>';
+            button.dataset.originalText = span.textContent;
+            span.textContent = 'Cargando...';
             button.disabled = true;
         } else {
-            button.innerHTML = button.dataset.originalText;
+            span.textContent = button.dataset.originalText;
             button.disabled = false;
         }
     };

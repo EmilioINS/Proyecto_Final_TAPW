@@ -1,15 +1,16 @@
 import { AuthApi } from '../api/authApi.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Check Authentication
+    // 1. Check Authentication & Setup User
     const token = localStorage.getItem('token');
     if (!token) {
-        // Not authenticated, redirect to login
         window.location.href = '/views/auth/login.html';
         return;
     }
 
-    // Decode simple payload from JWT to get user info (assuming standard JWT structure: header.payload.signature)
+    let templatesCache = []; // Store fetched templates to support instant rendering
+    let departmentsCache = []; // Store fetched departments
+
     try {
         const payloadBase64 = token.split('.')[1];
         const decodedPayload = JSON.parse(atob(payloadBase64));
@@ -20,12 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     } catch (e) {
         console.error('Error decoding token', e);
-        // Invalid token format
         localStorage.removeItem('token');
         window.location.href = '/views/auth/login.html';
+        return;
     }
 
-    // 2. Navigation Logic
+    // 2. Navigation Control
     const navLinks = document.querySelectorAll('.nav-link');
     const viewSections = document.querySelectorAll('.view-section');
     const pageTitle = document.getElementById('page-title');
@@ -34,39 +35,194 @@ document.addEventListener('DOMContentLoaded', () => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             
-            // Remove active class from all links and sections
             navLinks.forEach(l => l.classList.remove('active'));
             viewSections.forEach(s => s.classList.remove('active'));
 
-            // Add active class to clicked link
             link.classList.add('active');
 
-            // Show target section
             const targetId = link.getAttribute('data-target');
             document.getElementById(targetId).classList.add('active');
 
-            // Update title
-            pageTitle.textContent = link.textContent.trim();
+            pageTitle.textContent = link.querySelector('span').textContent.trim();
         });
     });
 
-    // 3. Logout Logic
+    // 3. Logout Control
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
             try {
-                // Inform backend to optionally invalidate/log (even though it's stateless here)
                 await AuthApi.logout();
             } catch (e) {
-                console.warn("Error calling logout API", e);
+                console.warn("Logout endpoint error", e);
             } finally {
-                // Clear local storage and redirect
                 localStorage.removeItem('token');
                 window.location.href = '/views/auth/login.html';
             }
         });
     }
-    // 4. Data Fetching and Rendering
+
+    // 4. Modals Control (Templates & Departments)
+    const setupModals = () => {
+        // Elements
+        const templateModal = document.getElementById('template-modal');
+        const deptModal = document.getElementById('department-modal');
+        
+        const openTemplateBtn = document.getElementById('btn-new-template');
+        const openDeptBtn = document.getElementById('btn-new-dept');
+        
+        const closeTemplateBtn = document.getElementById('btn-close-template-modal');
+        const closeDeptBtn = document.getElementById('btn-close-dept-modal');
+        
+        const templateOverlay = templateModal.querySelector('.modal-overlay');
+        const deptOverlay = deptModal.querySelector('.modal-overlay');
+
+        // Handlers
+        const toggleModal = (modal, show) => {
+            if (show) {
+                modal.classList.add('active');
+            } else {
+                modal.classList.remove('active');
+            }
+        };
+
+        if (openTemplateBtn) openTemplateBtn.addEventListener('click', () => toggleModal(templateModal, true));
+        if (openDeptBtn) openDeptBtn.addEventListener('click', () => toggleModal(deptModal, true));
+
+        if (closeTemplateBtn) closeTemplateBtn.addEventListener('click', () => toggleModal(templateModal, false));
+        if (closeDeptBtn) closeDeptBtn.addEventListener('click', () => toggleModal(deptModal, false));
+
+        if (templateOverlay) templateOverlay.addEventListener('click', () => toggleModal(templateModal, false));
+        if (deptOverlay) deptOverlay.addEventListener('click', () => toggleModal(deptModal, false));
+    };
+
+    // 5. microHandlebars compiler for Live Previews
+    const compileTemplate = (html, data) => {
+        return html.replace(/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/g, (match, key) => {
+            const keys = key.split('.');
+            let value = data;
+            for (const k of keys) {
+                if (value && value[k] !== undefined) {
+                    value = value[k];
+                } else {
+                    value = '';
+                    break;
+                }
+            }
+            return value !== null && value !== undefined ? value : '';
+        });
+    };
+
+    const updateLivePreview = () => {
+        const previewIframe = document.getElementById('preview-iframe');
+        const previewPlaceholder = document.getElementById('preview-placeholder');
+        const previewStatus = document.getElementById('preview-status');
+        const selectedToken = document.getElementById('template-select').value;
+        const jsonText = document.getElementById('json-data').value;
+
+        if (!selectedToken) {
+            previewPlaceholder.style.display = 'flex';
+            previewIframe.style.display = 'none';
+            previewStatus.textContent = 'Sin plantilla';
+            previewStatus.className = 'badge out-of-sync';
+            return;
+        }
+
+        const template = templatesCache.find(t => t.token === selectedToken);
+        if (!template) return;
+
+        let parsedData = {};
+        try {
+            parsedData = JSON.parse(jsonText);
+            previewStatus.textContent = 'Sincronizado';
+            previewStatus.className = 'badge';
+        } catch (e) {
+            previewStatus.textContent = 'JSON Inválido';
+            previewStatus.className = 'badge out-of-sync';
+            return; // Don't compile if JSON is malformed
+        }
+
+        // Hide placeholder and show frame
+        previewPlaceholder.style.display = 'none';
+        previewIframe.style.display = 'block';
+
+        // Compile HTML
+        const compiledHtml = compileTemplate(template.html_content, parsedData);
+
+        // Inject inside iframe
+        const doc = previewIframe.contentDocument || previewIframe.contentWindow.document;
+        doc.open();
+        doc.write(compiledHtml);
+        doc.close();
+    };
+
+    // 6. JSON Beautifier
+    const setupJsonBeautifier = () => {
+        const btnFormat = document.getElementById('btn-format-json');
+        const textarea = document.getElementById('json-data');
+
+        if (btnFormat && textarea) {
+            btnFormat.addEventListener('click', () => {
+                try {
+                    const parsed = JSON.parse(textarea.value);
+                    textarea.value = JSON.stringify(parsed, null, 2);
+                    updateLivePreview();
+                } catch (e) {
+                    alert('Por favor introduce un JSON válido antes de formatear.');
+                }
+            });
+        }
+    };
+
+    // 7. Loaders and CRUD implementations
+    const loadDepartments = async () => {
+        try {
+            const response = await fetch('/api/departments', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error('Error al cargar departamentos');
+            const departments = await response.json();
+            departmentsCache = departments;
+
+            // Update Metric
+            const deptMetric = document.getElementById('count-departments');
+            if (deptMetric) deptMetric.textContent = departments.length;
+
+            // Update View Cards
+            const container = document.getElementById('departments-container');
+            if (container) {
+                container.innerHTML = '';
+                if (departments.length === 0) {
+                    container.innerHTML = '<p class="section-subtitle">No hay departamentos creados.</p>';
+                } else {
+                    departments.forEach(d => {
+                        const card = document.createElement('div');
+                        card.className = 'dept-card';
+                        card.innerHTML = `
+                            <h3>${d.name}</h3>
+                            <p>${d.description || 'Sin descripción'}</p>
+                        `;
+                        container.appendChild(card);
+                    });
+                }
+            }
+
+            // Populate select dropdown in Template Modal
+            const select = document.getElementById('template-dept');
+            if (select) {
+                select.innerHTML = '<option value="" disabled selected>Selecciona un departamento...</option>';
+                departments.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.id;
+                    opt.textContent = d.name;
+                    select.appendChild(opt);
+                });
+            }
+        } catch (e) {
+            console.error('Error fetching departments:', e);
+        }
+    };
+
     const loadTemplates = async () => {
         try {
             const response = await fetch('/api/templates', {
@@ -74,37 +230,50 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (!response.ok) throw new Error('Error al cargar plantillas');
             const templates = await response.json();
-            
+            templatesCache = templates;
+
+            // Update Metric
+            const countLabel = document.getElementById('count-templates');
+            if (countLabel) countLabel.textContent = templates.length;
+
+            // Populate View Grid
             const container = document.getElementById('templates-container');
-            const select = document.getElementById('template-select');
-            
-            container.innerHTML = '';
-            // keep the first disabled option in select
-            select.innerHTML = '<option value="" disabled selected>Selecciona una plantilla</option>';
-            
-            // update metrics
-            const templateMetric = document.querySelectorAll('.stat-card .value')[0];
-            if(templateMetric) templateMetric.textContent = templates.length;
+            if (container) {
+                container.innerHTML = '';
+                if (templates.length === 0) {
+                    container.innerHTML = '<p class="section-subtitle">No hay plantillas registradas.</p>';
+                } else {
+                    templates.forEach(t => {
+                        const card = document.createElement('div');
+                        card.className = 'stat-card';
+                        card.innerHTML = `
+                            <div class="card-icon cyan-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            </div>
+                            <div class="card-info" style="flex:1;">
+                                <h3 style="color:#FFF; font-size:1.1rem; margin-bottom:0.3rem;">${t.name}</h3>
+                                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:0.7rem;">${t.description || 'Sin descripción'}</p>
+                                <p style="color:var(--text-muted); font-size:0.75rem; font-family:monospace;">Token: <code style="color:var(--primary); font-weight:700;">${t.token}</code></p>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+                }
+            }
 
-            templates.forEach(t => {
-                // Add to view grid
-                const card = document.createElement('div');
-                card.className = 'stat-card';
-                card.innerHTML = `
-                    <h3>${t.name}</h3>
-                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem;">${t.description || 'Sin descripción'}</p>
-                    <p style="color: var(--text-muted); font-size: 0.75rem; margin-top: 1rem;">Token: <code style="color: var(--accent);">${t.token}</code></p>
-                `;
-                container.appendChild(card);
-
-                // Add to select options
-                const option = document.createElement('option');
-                option.value = t.token;
-                option.textContent = t.name;
-                select.appendChild(option);
-            });
-        } catch (error) {
-            console.error(error);
+            // Populate select dropdown in Generator Form
+            const genSelect = document.getElementById('template-select');
+            if (genSelect) {
+                genSelect.innerHTML = '<option value="" disabled selected>Selecciona una plantilla...</option>';
+                templates.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t.token;
+                    opt.textContent = t.name;
+                    genSelect.appendChild(opt);
+                });
+            }
+        } catch (e) {
+            console.error('Error fetching templates:', e);
         }
     };
 
@@ -115,54 +284,149 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (!response.ok) throw new Error('Error al cargar historial');
             const history = await response.json();
-            
-            const tbody = document.getElementById('history-container');
-            tbody.innerHTML = '';
-            
-            // update metrics
-            const documentMetric = document.querySelectorAll('.stat-card .value')[1];
-            if(documentMetric) documentMetric.textContent = history.length;
 
-            history.forEach(doc => {
-                const tr = document.createElement('tr');
-                tr.style.borderBottom = '1px solid var(--surface-border)';
-                const date = new Date(doc.created_at).toLocaleDateString();
-                
-                tr.innerHTML = `
-                    <td style="padding: 1rem;">${doc.templates?.name || 'Desconocido'}</td>
-                    <td style="padding: 1rem; color: var(--text-muted);">${date}</td>
-                    <td style="padding: 1rem;">
-                        <a href="${doc.pdf_url}" target="_blank" style="color: #34d399; text-decoration: none; font-weight: 500;">Ver PDF</a>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        } catch (error) {
-            console.error(error);
+            // Update Metric
+            const countLabel = document.getElementById('count-documents');
+            if (countLabel) countLabel.textContent = history.length;
+
+            // Populate Table
+            const tbody = document.getElementById('history-container');
+            if (tbody) {
+                tbody.innerHTML = '';
+                if (history.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:2rem;">No se han generado documentos aún.</td></tr>';
+                } else {
+                    history.forEach(doc => {
+                        const tr = document.createElement('tr');
+                        const date = new Date(doc.created_at).toLocaleString('es-MX', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        
+                        tr.innerHTML = `
+                            <td style="font-weight:700; color:#FFF;">${doc.templates?.name || 'Desconocido'}</td>
+                            <td style="color:var(--text-muted);">${date}</td>
+                            <td><code style="font-size:0.8rem; color:var(--accent);">${doc.document_hash.substring(0, 16)}...</code></td>
+                            <td>
+                                <a href="${doc.pdf_url}" target="_blank" class="btn-primary" style="display:inline-flex; padding:0.4rem 0.8rem; font-size:0.8rem; border-radius:8px;">
+                                    <span>Ver PDF</span>
+                                </a>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            }
+        } catch (e) {
+            console.error('Error fetching history:', e);
         }
     };
 
-    const setupGenerator = () => {
-        const form = document.getElementById('generator-form');
-        const resultDiv = document.getElementById('generator-result');
-        
-        if (form) {
-            form.addEventListener('submit', async (e) => {
+    // Forms Handlers
+    const setupFormSubmissions = () => {
+        // Department Form Submission
+        const deptForm = document.getElementById('department-form');
+        const deptModal = document.getElementById('department-modal');
+        if (deptForm) {
+            deptForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                resultDiv.style.display = 'block';
-                resultDiv.innerHTML = '<p style="color: var(--text-muted);">Generando...</p>';
-                
-                const tokenInput = document.getElementById('template-select').value;
-                const jsonInput = document.getElementById('json-data').value;
-                
+                const name = document.getElementById('dept-name').value;
+                const description = document.getElementById('dept-desc').value;
+
+                try {
+                    const res = await fetch('/api/departments', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ name, description })
+                    });
+                    
+                    if (!res.ok) {
+                        const err = await res.json();
+                        throw new Error(err.message || 'Error al registrar departamento');
+                    }
+
+                    // Reset and Close
+                    deptForm.reset();
+                    deptModal.classList.remove('active');
+                    
+                    // Reload
+                    loadDepartments();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            });
+        }
+
+        // Template Form Submission
+        const tempForm = document.getElementById('template-form');
+        const tempModal = document.getElementById('template-modal');
+        if (tempForm) {
+            tempForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('template-name').value;
+                const description = document.getElementById('template-desc').value;
+                const department_id = document.getElementById('template-dept').value;
+                const html_content = document.getElementById('template-html').value;
+
+                try {
+                    const res = await fetch('/api/templates', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ name, description, department_id, html_content })
+                    });
+                    
+                    if (!res.ok) {
+                        const err = await res.json();
+                        throw new Error(err.message || 'Error al guardar plantilla');
+                    }
+
+                    // Reset and Close
+                    tempForm.reset();
+                    tempModal.classList.remove('active');
+                    
+                    // Reload
+                    loadTemplates();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            });
+        }
+
+        // Document Generator Submission
+        const genForm = document.getElementById('generator-form');
+        const resultDiv = document.getElementById('generator-result');
+        if (genForm) {
+            genForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const selectedToken = document.getElementById('template-select').value;
+                const jsonText = document.getElementById('json-data').value;
+                const btnSubmit = document.getElementById('btn-submit-generator');
+
                 let data;
                 try {
-                    data = JSON.parse(jsonInput);
+                    data = JSON.parse(jsonText);
                 } catch (err) {
-                    resultDiv.innerHTML = '<p style="color: var(--error);">Error: JSON inválido.</p>';
+                    alert('El JSON de entrada no es válido');
                     return;
                 }
+
+                // UI Loading state
+                btnSubmit.disabled = true;
+                const btnSpan = btnSubmit.querySelector('span');
+                const origText = btnSpan.textContent;
+                btnSpan.textContent = 'Renderizando en Supabase...';
                 
+                resultDiv.style.display = 'none';
+
                 try {
                     const response = await fetch('/api/documents', {
                         method: 'POST',
@@ -170,31 +434,50 @@ document.addEventListener('DOMContentLoaded', () => {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify({ token: tokenInput, data, mode: 'generate' })
+                        body: JSON.stringify({ token: selectedToken, data, mode: 'generate' })
                     });
                     
                     const result = await response.json();
-                    
                     if (!response.ok) {
                         throw new Error(result.message || 'Error al generar documento');
                     }
-                    
+
+                    resultDiv.style.display = 'flex';
                     resultDiv.innerHTML = `
-                        <p style="color: #34d399; margin-bottom: 0.5rem;">${result.message}</p>
-                        <a href="${result.pdf_url}" target="_blank" class="btn-primary" style="display: inline-block; text-decoration: none;">Abrir Documento</a>
+                        <p style="color:var(--emerald); font-weight:700; font-size:0.9rem;">✨ ¡PDF generado con éxito!</p>
+                        <a href="${result.pdf_url}" target="_blank" class="btn-primary" style="padding:0.4rem 0.8rem; font-size:0.8rem; border-radius:8px;">
+                            <span>Abrir Documento</span>
+                        </a>
                     `;
-                    
-                    // Reload history to show the new document
+
                     loadHistory();
                 } catch (error) {
-                    resultDiv.innerHTML = `<p style="color: var(--error);">Error: ${error.message}</p>`;
+                    alert('Error al generar PDF: ' + error.message);
+                } finally {
+                    btnSubmit.disabled = false;
+                    btnSpan.textContent = origText;
                 }
             });
         }
     };
 
-    // Initialize
+    // 8. Event listeners for Live Preview
+    const setupLivePreviewTriggers = () => {
+        const select = document.getElementById('template-select');
+        const textarea = document.getElementById('json-data');
+
+        if (select) select.addEventListener('change', updateLivePreview);
+        if (textarea) textarea.addEventListener('input', updateLivePreview);
+    };
+
+    // Initialize Dashboard
+    setupModals();
+    setupJsonBeautifier();
+    setupFormSubmissions();
+    setupLivePreviewTriggers();
+
+    // Fetch Init Data
+    loadDepartments();
     loadTemplates();
     loadHistory();
-    setupGenerator();
 });
