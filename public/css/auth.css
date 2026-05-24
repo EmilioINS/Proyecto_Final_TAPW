@@ -3,11 +3,11 @@
 :root {
   --primary: #00F2FE; /* Cyan Glow */
   --primary-hover: #4FACFE; /* Soft blue */
-  --background: #060913; /* Deep Cosmic Blue/Black */
-  --surface: rgba(10, 15, 30, 0.65);
-  --surface-border: rgba(255, 255, 255, 0.08);
+  --background: #030509; /* Solid Deep Velvet Midnight Black */
+  --surface: rgba(6, 9, 18, 0.55);
+  --surface-border: rgba(255, 255, 255, 0.04);
   --text-main: #FFFFFF;
-  --text-muted: #8F9CAE;
+  --text-muted: #6E7E91;
   --error: #FF4B4B;
   --success: #00E676;
   --accent: #FDB614; /* TecNM Celaya Gold */
@@ -47,7 +47,7 @@ body {
   position: absolute;
   border-radius: 50%;
   filter: blur(120px);
-  opacity: 0.45;
+  opacity: 0.08;
   animation: float 20s infinite alternate ease-in-out;
 }
 

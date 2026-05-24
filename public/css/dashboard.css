@@ -1,13 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --primary: #00F2FE; /* Cyan Glow */
+  --primary: #00F2FE; /* Cyan Accent */
   --primary-hover: #4FACFE;
-  --background: #060913; /* Deep Cosmic Blue/Black */
-  --surface: rgba(10, 15, 30, 0.6);
-  --surface-border: rgba(255, 255, 255, 0.08);
+  --background: #030509; /* Solid Deep Velvet Midnight Black */
+  --surface: rgba(6, 9, 18, 0.55);
+  --surface-border: rgba(255, 255, 255, 0.04);
   --text-main: #FFFFFF;
-  --text-muted: #8F9CAE;
+  --text-muted: #6E7E91; /* Minimalist slate gray */
   --error: #FF4B4B;
   --success: #00E676;
   --accent: #FDB614; /* TecNM Celaya Gold */
@@ -48,7 +48,7 @@ body {
   position: absolute;
   border-radius: 50%;
   filter: blur(140px);
-  opacity: 0.25;
+  opacity: 0.08;
   animation: float 25s infinite alternate ease-in-out;
 }
 
@@ -513,7 +513,7 @@ body {
   resize: none;
   background: rgba(5, 7, 16, 0.8) !important;
   border-color: rgba(255, 255, 255, 0.05) !important;
-  height: 280px;
+  height: 440px;
 }
 
 /* Preview Pane */
@@ -549,20 +549,20 @@ body {
 /* Professional PDF Page floating container style */
 .preview-frame-container {
   flex: 1;
-  background: #1e293b; /* Slate dark background */
+  background: transparent;
   border-radius: 16px;
   border: 1px solid var(--surface-border);
-  overflow-y: auto;
+  overflow: hidden;
   position: relative;
   box-shadow: 
-    0 15px 35px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  min-height: 480px;
-  max-height: 480px;
+    0 15px 35px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  min-height: 520px;
+  max-height: 520px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
 }
 
 #preview-iframe {
@@ -570,8 +570,8 @@ body {
   height: 100%;
   border: none;
   background: #FFFFFF;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  border-radius: 14px;
+  box-shadow: none;
   display: none;
 }
 
