@@ -1,41 +1,51 @@
-var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var cors = require('cors');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+// Import routes
+var authRoutes = require('./src/infrastructure/routes/authRoutes');
+var templateRoutes = require('./src/infrastructure/routes/templateRoutes');
+var documentRoutes = require('./src/infrastructure/routes/documentRoutes');
+var departmentRoutes = require('./src/infrastructure/routes/departmentRoutes');
 
 var app = express();
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-
+app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/templates', templateRoutes);
+app.use('/api/documents', documentRoutes);
+app.use('/api/departments', departmentRoutes);
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+// Explicit root redirect to login
+app.get('/', (req, res) => {
+    res.redirect('/views/auth/login.html');
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+// Catch-all for API 404
+app.use('/api/*', (req, res) => {
+    res.status(404).json({ message: 'API Route not found' });
+});
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+app.use((req, res) => {
+    res.status(404).sendFile(path.join(__dirname, 'public/views/auth/login.html'));
+});
+
+// General error handler
+app.use(function(err, req, res, next) {
+    console.error(err.stack);
+    res.status(err.status || 500).json({
+        message: err.message || 'Internal Server Error',
+        error: req.app.get('env') === 'development' ? err : {}
+    });
 });
 
 module.exports = app;

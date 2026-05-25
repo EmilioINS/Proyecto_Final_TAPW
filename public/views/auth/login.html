@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocFlow - Iniciar Sesión</title>
+    <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="auth-container">
+        <div class="glass-panel">
+            <div class="header">
+                <img src="/images/tecnm_logo.svg" alt="TecNM Logo" style="height: 55px; margin-bottom: 1rem; filter: brightness(0) invert(1); opacity: 0.85;">
+                <h1>DocFlow</h1>
+                <p>Generación Dinámica de PDFs</p>
+            </div>
+            
+            <div id="alert-box" class="alert"></div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <input type="email" id="email" class="form-control" required placeholder="">
+                    <label for="email">Correo Electrónico</label>
+                </div>
+                
+                <div class="form-group">
+                    <input type="password" id="password" class="form-control" required placeholder="">
+                    <label for="password">Contraseña</label>
+                </div>
+                
+                <button type="submit" class="btn-primary" id="login-btn">
+                    <span>Iniciar Sesión</span>
+                </button>
+            </form>
+
+            <div class="footer-link">
+                ¿No tienes cuenta? <a href="/views/auth/register.html">Regístrate aquí</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/js/pages/login.js"></script>
+</body>
+</html>
