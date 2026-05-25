@@ -1,19 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --primary: #00F2FE; /* Cyan Accent */
-  --primary-hover: #4FACFE;
-  --background: #030509; /* Solid Deep Velvet Midnight Black */
-  --surface: rgba(6, 9, 18, 0.55);
-  --surface-border: rgba(255, 255, 255, 0.04);
+  --primary: #FFFFFF; /* Pure White minimalist accent */
+  --primary-hover: #F3F4F6;
+  --background: #07080C; /* Solid Sleek Velvet Charcoal Black */
+  --surface: rgba(13, 16, 27, 0.55);
+  --surface-border: rgba(255, 255, 255, 0.035);
   --text-main: #FFFFFF;
-  --text-muted: #6E7E91; /* Minimalist slate gray */
-  --error: #FF4B4B;
-  --success: #00E676;
-  --accent: #FDB614; /* TecNM Celaya Gold */
+  --text-muted: #7A899C; /* Soft silver gray */
+  --error: #EF4444;
+  --success: #10B981; /* Premium Emerald */
+  --accent: #F59E0B; /* Metallic Gold */
   --sidebar-width: 280px;
-  --emerald: #00E676;
-  --gold: #FDB614;
+  --emerald: #10B981;
+  --gold: #F59E0B;
 }
 
 * {
@@ -23,7 +23,7 @@
 }
 
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', sans-serif;
   background-color: var(--background);
   color: var(--text-main);
   min-height: 100vh;
@@ -789,10 +789,10 @@ body {
 
 .form-control:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: rgba(255, 255, 255, 0.2);
   box-shadow: 
-    0 0 0 1px var(--primary),
-    0 0 15px -4px rgba(0, 242, 254, 0.3);
+    0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 0 15px -4px rgba(255, 255, 255, 0.1);
   background: rgba(5, 7, 16, 0.85);
 }
 
@@ -808,25 +808,25 @@ select.form-control {
 /* Buttons */
 .btn-primary {
   padding: 0.85rem 1.5rem;
-  background: linear-gradient(135deg, var(--emerald) 0%, var(--primary) 100%);
-  color: #060913;
-  border: none;
+  background: var(--primary);
+  color: #07080C;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 12px;
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 15px -3px rgba(0, 242, 254, 0.3);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px -3px rgba(0, 242, 254, 0.5);
-  filter: brightness(1.08);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.08);
+  background: var(--primary-hover);
 }
 
 .btn-primary:active {
